@@ -10,5 +10,6 @@
   left: 50px;
   padding: 10px;
   position: fixed;
+  width: 400px;
   z-index: 99;
 }
