@@ -1,1 +1,6 @@
-/* You can add global styles to this file, and also import other style files */
+app-menu {
+  position: fixed;
+  left: 20px;
+  top: 20px;
+  z-index: 9999;
+}
