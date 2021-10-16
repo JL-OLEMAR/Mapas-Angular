@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion, @typescript-eslint/strict-boolean-expressions */
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core'
 import * as mapboxgl from 'mapbox-gl'
 
 interface MarcadorColor {
   color: string
-  marker: mapboxgl.Marker
+  marker?: mapboxgl.Marker
+  centro?: [number, number]
 }
 
 @Component({
@@ -16,10 +18,7 @@ export class MarcadoresComponent implements AfterViewInit {
   mapa!: mapboxgl.Map
   zoomLevel: number = 16
   center: [number, number] = [-77.02952900833222, -12.044404909131146]
-  // Arreglo de marcadores
   marcadores: MarcadorColor[] = []
-
-  // constructor (): {}
 
   ngAfterViewInit (): void {
     this.mapa = new mapboxgl.Map({
@@ -29,12 +28,7 @@ export class MarcadoresComponent implements AfterViewInit {
       zoom: this.zoomLevel
     })
 
-    // Marker personalizado
-    // const markerHtml: HTMLElement = document.createElement('div')
-    // markerHtml.innerHTML = '🚩 here'
-    // new mapboxgl.Marker({ element: markerHtml })
-    //   .setLngLat(this.center)
-    //   .addTo(this.mapa)
+    this.leerLocalStorage()
   }
 
   agregarMarcador (): void {
@@ -45,13 +39,37 @@ export class MarcadoresComponent implements AfterViewInit {
       .setLngLat(this.center)
       .addTo(this.mapa)
 
-    this.marcadores.push({
-      color,
-      marker: nuevoMarcador
-    })
+    this.marcadores.push({ color, marker: nuevoMarcador })
+    this.guardarMarcadoresLocalStorage()
   }
 
-  irMarcador (): void {
+  irMarcador (marker: mapboxgl.Marker): void {
+    this.mapa.flyTo({ center: marker.getLngLat() })
+  }
 
+  guardarMarcadoresLocalStorage (): void {
+    const lngLatArr: MarcadorColor[] = []
+
+    this.marcadores.forEach(m => {
+      const color = m.color
+      const { lng, lat } = m.marker!.getLngLat()
+      lngLatArr.push({ color, centro: [lng, lat] })
+    })
+
+    localStorage.setItem('marcadores', JSON.stringify(lngLatArr))
+  }
+
+  leerLocalStorage (): void {
+    if (!localStorage.getItem('marcadores')) { return }
+
+    const lngLatArr: MarcadorColor[] = JSON.parse(localStorage.getItem('marcadores')!)
+
+    lngLatArr.forEach(m => {
+      const newMarker = new mapboxgl.Marker({ color: m.color, draggable: true })
+        .setLngLat(m.centro!)
+        .addTo(this.mapa)
+
+      this.marcadores.push({ marker: newMarker, color: m.color })
+    })
   }
 }
