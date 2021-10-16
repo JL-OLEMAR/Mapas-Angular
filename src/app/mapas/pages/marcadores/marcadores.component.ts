@@ -41,6 +41,7 @@ export class MarcadoresComponent implements AfterViewInit {
 
     this.marcadores.push({ color, marker: nuevoMarcador })
     this.guardarMarcadoresLocalStorage()
+    nuevoMarcador.on('dragend', () => (this.guardarMarcadoresLocalStorage()))
   }
 
   irMarcador (marker: mapboxgl.Marker): void {
@@ -70,6 +71,14 @@ export class MarcadoresComponent implements AfterViewInit {
         .addTo(this.mapa)
 
       this.marcadores.push({ marker: newMarker, color: m.color })
+
+      newMarker.on('dragend', () => (this.guardarMarcadoresLocalStorage()))
     })
+  }
+
+  borrarMarcador (i: number): void {
+    this.marcadores[i].marker?.remove()
+    this.marcadores.splice(i, 1)
+    this.guardarMarcadoresLocalStorage()
   }
 }
